@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="QE Framework Suite" verbose="1">
+
+ <test name="Web Tests">
+ <classes>
+ <class name="com.nehayadav.qe.tests.web.LoginTest"/>
+ <class name="com.nehayadav.qe.tests.web.CheckoutTest"/>
+ <class name="com.nehayadav.qe.tests.api.UserApiTest"/>
+ <class name="com.nehayadav.qe.tests.web.HybridApiUiTest"/>
+ </classes>
+ </test>
+
+</suite>
+
