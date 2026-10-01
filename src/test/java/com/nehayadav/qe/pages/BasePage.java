@@ -1,50 +1,52 @@
-package com.nehayadav.qe.pages;
+package com.nehayadav.qe.tests.web;
 
-import org.openqa.selenium.By;
+import com.nehayadav.qe.config.ConfigReader;
+import com.nehayadav.qe.driver.DriverFactory;
+import com.nehayadav.qe.pages.LoginPage;
+import io.qameta.allure.Allure;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 
-import java.time.Duration;
+import java.io.ByteArrayInputStream;
 
-public abstract class BasePage {
+public abstract class BaseWebTest {
 
-    protected final WebDriver driver;
-    protected final WebDriverWait wait;
+ protected WebDriver driver;
+ protected LoginPage loginPage;
 
-    protected BasePage(WebDriver driver) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-    }
+ @BeforeMethod
+ public void setUp() {
+ driver = DriverFactory.getDriver();
+ loginPage = new LoginPage(driver);
+ loginPage.open(ConfigReader.get("web.baseUrl"));
+ }
 
-    protected WebElement waitVisible(By locator) {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-    }
+ @AfterMethod
+ public void tearDown(ITestResult result) {
+ if (result.getStatus() == ITestResult.FAILURE) {
+ attachScreenshot();
+ attachPageSource();
+ }
+ DriverFactory.quitDriver();
+ }
 
-    protected WebElement waitClickable(By locator) {
-        return wait.until(ExpectedConditions.elementToBeClickable(locator));
-    }
+ private void attachScreenshot() {
+ try {
+ byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+ Allure.addAttachment("Failure screenshot", new ByteArrayInputStream(screenshot));
+ } catch (Exception ignored) {
+ }
+ }
 
-    protected void click(By locator) {
-        waitClickable(locator).click();
-    }
-
-    protected void type(By locator, String text) {
-        WebElement el = waitVisible(locator);
-        el.clear();
-        el.sendKeys(text);
-    }
-
-    protected String textOf(By locator) {
-        return waitVisible(locator).getText();
-    }
-
-    protected boolean isVisible(By locator) {
-        try {
-            return waitVisible(locator).isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
-    }
+ private void attachPageSource() {
+ try {
+ Allure.addAttachment("Page source", "text/html", driver.getPageSource(), ".html");
+ } catch (Exception ignored) {
+ }
+ }
 }
+
